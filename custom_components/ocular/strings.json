@@ -1,0 +1,130 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Ocular cloud login",
+        "description": "Use the same email and password as the Ocular app.",
+        "data": {
+          "username": "Email",
+          "password": "Password"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Re-enter Ocular password",
+        "data": {
+          "password": "Password"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Email or password rejected by Ocular.",
+      "cannot_connect": "Could not reach the Ocular cloud."
+    },
+    "abort": {
+      "already_configured": "This Ocular account is already added.",
+      "reauth_successful": "Re-authenticated."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Ocular options",
+        "data": {
+          "scan_interval": "Live status poll interval (seconds)"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "status": {
+        "name": "Status"
+      },
+      "plug_status": {
+        "name": "Plug status"
+      },
+      "charging_current": {
+        "name": "Charging current"
+      },
+      "active_current_limit": {
+        "name": "Active current limit"
+      },
+      "charging_power": {
+        "name": "Charging power (estimated)"
+      },
+      "session_energy": {
+        "name": "Session energy"
+      },
+      "session_start": {
+        "name": "Session start"
+      },
+      "session_mode": {
+        "name": "Session mode"
+      },
+      "solar_mode": {
+        "name": "Solar mode"
+      },
+      "last_session_energy": {
+        "name": "Last session energy"
+      },
+      "last_session_duration": {
+        "name": "Last session duration"
+      },
+      "last_session_end": {
+        "name": "Last session end"
+      },
+      "energy_last_30_days": {
+        "name": "Energy last 30 days"
+      },
+      "raw_status": {
+        "name": "Raw cloud data"
+      }
+    },
+    "binary_sensor": {
+      "plugged_in": {
+        "name": "Plugged in"
+      },
+      "charging": {
+        "name": "Charging"
+      },
+      "online": {
+        "name": "Online"
+      }
+    },
+    "switch": {
+      "charge": {
+        "name": "Charge"
+      },
+      "plug_and_charge": {
+        "name": "Plug and charge"
+      }
+    },
+    "number": {
+      "session_current_limit": {
+        "name": "Session current limit"
+      },
+      "default_current_limit": {
+        "name": "Default current limit"
+      }
+    },
+    "select": {
+      "session_mode_select": {
+        "name": "Session charge mode"
+      },
+      "solar_mode_select": {
+        "name": "Solar charging mode"
+      }
+    },
+    "button": {
+      "refresh": {
+        "name": "Refresh status"
+      },
+      "refresh_history": {
+        "name": "Refresh history"
+      },
+      "reboot": {
+        "name": "Reboot charger"
+      }
+    }
+  }
+}
