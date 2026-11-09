@@ -3,7 +3,8 @@
   "name": "Ocular EV Charger (Cloud)",
   "after_dependencies": [
     "frontend",
-    "http"
+    "http",
+    "lovelace"
   ],
   "codeowners": [
     "@rickevans86"
@@ -14,5 +15,5 @@
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/rickevans86/HomeAssistant_OcularIQ/issues",
   "requirements": [],
-  "version": "0.2.0"
+  "version": "0.2.1"
 }

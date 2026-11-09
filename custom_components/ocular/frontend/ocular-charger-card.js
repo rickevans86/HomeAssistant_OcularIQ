@@ -9,7 +9,7 @@
  *   show_history: true
  */
 
-const CARD_VERSION = "0.2.0";
+const CARD_VERSION = "0.2.1";
 
 const STATUS = {
   available: { label: "Ready", tone: "idle" },
@@ -422,6 +422,7 @@ const STYLE = `<style>
   @media (prefers-reduced-motion: reduce) { .pulse { animation: none; stroke-dasharray: none; opacity: .8; } .tone-go .dot { animation: none; } }
 </style>`;
 
+if (!customElements.get("ocular-charger-card")) {
 customElements.define("ocular-charger-card", OcularChargerCard);
 window.customCards = window.customCards || [];
 window.customCards.push({
@@ -430,4 +431,5 @@ window.customCards.push({
   description: "Status, start/stop, current and charge modes for an Ocular EV charger.",
   preview: true,
 });
+}
 console.info(`%c OCULAR-CHARGER-CARD %c ${CARD_VERSION} `, "background:#13a37f;color:#fff", "");

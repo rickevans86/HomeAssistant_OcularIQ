@@ -22,4 +22,4 @@ MIN_CURRENT = 6
 DEFAULT_MAX_CURRENT = 32
 NOMINAL_VOLTAGE = 230
 
-CARD_VERSION = "0.2.0"  # bump with the card to bust browser caches
+CARD_VERSION = "0.2.1"  # bump with the card to bust browser caches

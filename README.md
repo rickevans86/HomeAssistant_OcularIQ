@@ -48,7 +48,12 @@ show_history: true           # last charge and 30-day total
 
 The card shows live power, current, session energy, time and cost, a Start/Stop button that only lights up when the car is plugged in, a current slider, the Fast/Eco/Eco+ session modes, and Grid/Solar assist/Solar only. Tap any figure to open its history.
 
-If the card doesn't appear right after an update, refresh your browser.
+The integration adds the card to **Settings → Dashboards → ⋮ → Resources** for you and updates it whenever the version changes.
+
+If you see *Custom element doesn't exist: ocular-charger-card*:
+1. Make sure you restarted Home Assistant after installing or updating.
+2. Refresh the browser. In the phone app, go to **Settings → Companion app → Debugging → Reset frontend cache**.
+3. Check that the Resources list has `/ocular_static/ocular-charger-card.js`. If your dashboards are in YAML mode, add it there yourself as a JavaScript module.
 
 ## Logs and troubleshooting
 
