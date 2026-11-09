@@ -11,6 +11,7 @@ from .const import CONF_PASSWORD_HASH, DOMAIN
 REDACT = {
     CONF_PASSWORD_HASH, "username", "email", "account", "phoneNumber", "address",
     "zipCode", "firstName", "lastName", "headUrl", "serialNumber", "code",
+    "androidToken", "iosToken", "idTag", "rfCardName", "evccId", "familyName",
 }
 
 

@@ -50,7 +50,7 @@
         "name": "Active current limit"
       },
       "charging_power": {
-        "name": "Charging power (estimated)"
+        "name": "Charging power"
       },
       "session_energy": {
         "name": "Session energy"
@@ -78,6 +78,15 @@
       },
       "raw_status": {
         "name": "Raw cloud data"
+      },
+      "session_time": {
+        "name": "Session time"
+      },
+      "session_cost": {
+        "name": "Session cost"
+      },
+      "electricity_price": {
+        "name": "Electricity price"
       }
     },
     "binary_sensor": {

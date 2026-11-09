@@ -35,6 +35,8 @@ async def async_setup_entry(hass, entry, async_add_entities):
                 PowerSensor(coordinator, pid, "charging_power", conn),
                 SessionEnergySensor(coordinator, pid, "session_energy", conn),
                 SessionStartSensor(coordinator, pid, "session_start", conn),
+                SessionTimeSensor(coordinator, pid, "session_time", conn),
+                SessionCostSensor(coordinator, pid, "session_cost", conn),
                 SessionModeSensor(coordinator, pid, "session_mode", conn),
                 SolarModeSensor(coordinator, pid, "solar_mode", conn),
             ]
@@ -43,6 +45,7 @@ async def async_setup_entry(hass, entry, async_add_entities):
             LastSessionDuration(coordinator, pid, "last_session_duration"),
             LastSessionEnd(coordinator, pid, "last_session_end"),
             PeriodEnergy(coordinator, pid, "energy_last_30_days"),
+            PriceSensor(coordinator, pid, "electricity_price"),
             RawStatus(coordinator, pid, "raw_status"),
         ]
     async_add_entities(entities)
@@ -94,7 +97,8 @@ class PowerSensor(OcularEntity, SensorEntity):
 
     _attr_device_class = SensorDeviceClass.POWER
     _attr_state_class = SensorStateClass.MEASUREMENT
-    _attr_native_unit_of_measurement = UnitOfPower.WATT
+    _attr_native_unit_of_measurement = UnitOfPower.KILO_WATT
+    _attr_suggested_display_precision = 2
 
     @property
     def native_value(self):
@@ -104,7 +108,7 @@ class PowerSensor(OcularEntity, SensorEntity):
         ch = self.charger
         rated_kw = num((ch.detail.get("power") if ch else None) or self.conn.get("power")) or 7
         phases = 3 if rated_kw > 12 else 1
-        return round(amps * NOMINAL_VOLTAGE * phases)
+        return round(amps * NOMINAL_VOLTAGE * phases / 1000, 3)
 
     @property
     def extra_state_attributes(self):
@@ -128,6 +132,76 @@ class SessionStartSensor(OcularEntity, SensorEntity):
     @property
     def native_value(self):
         return parse_time(self.conn.get("startTime")) if self.transaction_id else None
+
+
+class SessionTimeSensor(OcularEntity, SensorEntity):
+    """Minutes since the active session started (0 when idle)."""
+
+    _attr_device_class = SensorDeviceClass.DURATION
+    _attr_native_unit_of_measurement = UnitOfTime.MINUTES
+    _attr_icon = "mdi:timer-outline"
+
+    @property
+    def native_value(self):
+        if not self.transaction_id:
+            return 0
+        start = parse_time(self.conn.get("startTime"))
+        if not start:
+            return None
+        return max(0, int((dt_util.utcnow() - start).total_seconds() // 60))
+
+
+def _price(coordinator):
+    p = coordinator.data.price if coordinator.data else None
+    return (num(p.get("price")), p.get("currencySign")) if isinstance(p, dict) else (None, None)
+
+
+def _record_cost(coordinator, record):
+    if num(record.get("cost")) is not None:
+        return num(record.get("cost"))
+    price, _ = _price(coordinator)
+    kwh = num(record.get("electricValue"))
+    return round(price * kwh, 2) if price is not None and kwh is not None else None
+
+
+class SessionCostSensor(OcularEntity, SensorEntity):
+    """Session energy x the price set in the Ocular app."""
+
+    _attr_device_class = SensorDeviceClass.MONETARY
+    _attr_suggested_display_precision = 2
+    _attr_icon = "mdi:cash"
+
+    @property
+    def native_unit_of_measurement(self):
+        return self.hass.config.currency if self.hass else None
+
+    @property
+    def native_value(self):
+        price, _ = _price(self.coordinator)
+        energy = num(self.conn.get("energy"))
+        if price is None or energy is None:
+            return None
+        return round(price * energy, 2)
+
+
+class PriceSensor(OcularEntity, SensorEntity):
+    """Electricity price per kWh configured in the Ocular app."""
+
+    _attr_icon = "mdi:currency-usd"
+    _attr_suggested_display_precision = 2
+
+    @property
+    def native_unit_of_measurement(self):
+        cur = self.hass.config.currency if self.hass else ""
+        return f"{cur}/kWh"
+
+    @property
+    def native_value(self):
+        return _price(self.coordinator)[0]
+
+    @property
+    def extra_state_attributes(self):
+        return {"currency_sign": _price(self.coordinator)[1]}
 
 
 class SessionModeSensor(OcularEntity, SensorEntity):
@@ -181,8 +255,8 @@ class LastSessionEnergy(_History):
             "end": r.get("endTime"),
             "connector": r.get("connectorId"),
             "user": " ".join(x for x in (r.get("firstName"), r.get("lastName")) if x),
-            "cost": r.get("priceStr"),
-            "card": r.get("code"),
+            "cost": _record_cost(self.coordinator, r),
+            "stop_reason": r.get("stopReason"),
         }
 
 
@@ -236,7 +310,8 @@ class PeriodEnergy(_History):
                     "start": r.get("startTime"),
                     "end": r.get("endTime"),
                     "kwh": num(r.get("electricValue")),
-                    "cost": r.get("priceStr"),
+                    "cost": _record_cost(self.coordinator, r),
+                    "stop_reason": r.get("stopReason"),
                     "user": " ".join(x for x in (r.get("firstName"), r.get("lastName")) if x),
                 }
                 for r in recs[:50]

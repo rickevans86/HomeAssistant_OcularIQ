@@ -41,11 +41,11 @@ async def handler(request: web.Request):
         charging = STATE["status"] == "Charging"
         return ok({"pointStatusInfoList": [{
             "id": PID, "name": "Garage", "pointStatus": STATE["status"], "pluggedStatus": "Plugged",
-            "currentCurrent": 15.5 if charging else 0, "limitCurrent": 16, "energy": 4.25, "power": 7,
+            "currentCurrent": 15.5 if charging else 0.0, "limitCurrent": 16.0, "energy": 4.25 if charging else None, "power": 7,
             "current": 32, "eco": "Fast", "gatewayMode": "PV", "internalGatewayId": "gw1",
-            "startTime": "2026-11-09T01:00:00.000Z", "transactionId": STATE["tid"] if charging else 0}]})
+            "startTime": "2026-11-09T01:00:00.000Z", "transactionId": STATE["tid"] if charging else None}]})
     if path.endswith("/limit/current"):
-        return ok(16)
+        return ok("16")
     if path.endswith(f"/app/eco/{PID}"):
         return ok({"defaultModel": "Fast"})
     if path.endswith("/plug/charging"):
@@ -53,9 +53,9 @@ async def handler(request: web.Request):
     if path.endswith("/transaction/record"):
         return ok([
             {"pointId": PID, "startTime": "2026-11-07 08:00:00", "endTime": "2026-11-07 10:30:00",
-             "electricValue": 12.5, "priceStr": "$3.75", "firstName": "Rick"},
+             "electricValue": 12.5, "cost": None, "stopReason": "EVDisconnected", "firstName": None},
             {"pointId": PID, "startTime": "2026-11-08 08:00:00", "endTime": "2026-11-08 09:00:00",
-             "electricValue": 5.0, "priceStr": "$1.50"},
+             "electricValue": 5.0, "cost": None, "stopReason": "Remote"},
         ])
     if path.endswith("/price"):
         return ok({"price": 0.3, "currencySign": "$"})
@@ -106,10 +106,14 @@ async def test_config_flow_and_entities(hass: HomeAssistant, mock_cloud):
     assert states["sensor.garage_status"].state == "Charging"
     assert float(states["sensor.garage_charging_current"].state) == 15.5
     assert float(states["sensor.garage_session_energy"].state) == 4.25
-    assert float(states["sensor.garage_charging_power_estimated"].state) == round(15.5 * 230)
+    assert float(states["sensor.garage_charging_power"].state) == round(15.5 * 230 / 1000, 3)
+    assert float(states["sensor.garage_electricity_price"].state) == 0.3
+    assert float(states["sensor.garage_session_cost"].state) == round(4.25 * 0.3, 2)
+    assert int(states["sensor.garage_session_time"].state) > 0
     assert float(states["sensor.garage_energy_last_30_days"].state) == 17.5
     assert float(states["sensor.garage_last_session_energy"].state) == 5.0
     assert states["sensor.garage_last_session_duration"].state == "60"
+    assert states["sensor.garage_last_session_energy"].attributes["cost"] == 1.5
     assert states["binary_sensor.garage_charging"].state == "on"
     assert states["binary_sensor.garage_plugged_in"].state == "on"
     assert states["switch.garage_charge"].state == "on"
